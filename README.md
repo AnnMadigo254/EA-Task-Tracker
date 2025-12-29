@@ -19,6 +19,7 @@ EA Task Tracker is a full-stack solution designed to manage and track Enterprise
 - 🌓 Clean, professional UI optimized for executive demos
 
 
+
 **Backend (Django REST Framework):**
 - 🔐 JWT authentication with role-based access
 - 🔍 Advanced search & filtering across all task fields
@@ -28,6 +29,7 @@ EA Task Tracker is a full-stack solution designed to manage and track Enterprise
 - 🔔 Notification system
 - 👨‍💼 Custom admin portal with visual dashboards
 - 🗄️ Support for both SQLite (dev) and MySQL (production)
+
 
 ### 🎨 Screenshots
 
