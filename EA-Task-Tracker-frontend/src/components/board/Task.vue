@@ -26,49 +26,43 @@ const subtasksCompleted = computed(() => {
 })
 </script> -->
 
-
 <template>
   <article class="group flex flex-col bg-white dark:bg-dark-grey p-4 rounded-lg cursor-pointer shadow-task max-w-[280px]">
-    <!-- Title -->
-    <h3 class="text-black dark:text-white font-bold mb-2 line-clamp-2">
+    <!-- PROJECT NAME (Prominent) -->
+    <div class="text-xs font-bold text-main-purple mb-1 truncate">
+      {{ task.projectName || '—' }}
+    </div>
+
+    <!-- TASK TITLE (Bold) -->
+    <h3 class="text-black dark:text-white font-bold text-sm mb-2 line-clamp-2">
       {{ task.title }}
     </h3>
 
-    <!-- Project & Task Type -->
-    <div class="text-xs text-medium-grey mb-2">
-      <span class="font-semibold">Project:</span> {{ task.projectName || '—' }}
-    </div>
-    <div class="text-xs text-medium-grey mb-2">
-      <span class="font-semibold">Type:</span> {{ task.taskType || 'Solution Design' }}
-    </div>
+    <!-- DESCRIPTION (Subtle, smaller) -->
+    <p v-if="task.description" class="text-xs text-medium-grey mb-3 line-clamp-2">
+      {{ task.description }}
+    </p>
 
-    <!-- Progress Status Badges -->
+    <!-- Status Badges -->
     <div class="flex flex-wrap gap-1 mb-2">
-      <span v-if="task.designStatus" class="px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-800">
+      <span v-if="task.designStatus" class="px-2 py-0.5 text-[10px] rounded bg-blue-100 text-blue-800">
         Design: {{ task.designStatus }}
       </span>
-      <span v-if="task.devStatus" class="px-2 py-0.5 text-xs rounded bg-green-100 text-green-800">
+      <span v-if="task.devStatus" class="px-2 py-0.5 text-[10px] rounded bg-green-100 text-green-800">
         Dev: {{ task.devStatus }}
       </span>
-      <span v-if="task.sitStatus" class="px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-800">
+      <span v-if="task.sitStatus" class="px-2 py-0.5 text-[10px] rounded bg-purple-100 text-purple-800">
         SIT: {{ task.sitStatus }}
       </span>
     </div>
 
-    <!-- Stakeholders -->
-    <div v-if="task.stakeholder || task.bapm" class="text-xs text-medium-grey mb-2">
-      <span v-if="task.stakeholder">
-        <span class="font-semibold">Stakeholder:</span> {{ task.stakeholder }}
+    <!-- BA/PM & Priority -->
+    <div class="flex justify-between items-end mt-auto">
+      <span v-if="task.bapm" class="text-[10px] text-medium-grey">
+        BA/PM: {{ task.bapm }}
       </span>
-      <span v-if="task.bapm" class="block">
-        <span class="font-semibold">BA/PM:</span> {{ task.bapm }}
-      </span>
-    </div>
-
-    <!-- Priority Badge -->
-    <div class="mt-auto">
       <span 
-        class="px-2 py-1 text-xs font-bold rounded-full"
+        class="px-2 py-1 text-[10px] font-bold rounded-full whitespace-nowrap"
         :class="getPriorityClass(task.priority)"
       >
         {{ task.priority }}
@@ -86,7 +80,6 @@ const props = defineProps({
   task: { type: Object, required: true }
 });
 
-// Priority color mapping
 const getPriorityClass = (priority) => {
   const classes = {
     'Critical': 'bg-red-100 text-red-800',

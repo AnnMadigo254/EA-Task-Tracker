@@ -132,7 +132,8 @@ export const useBoardsStore = defineStore({
 
               return {
                 id: board.id,
-                name: board.name,
+                // Extract name from owner instead of board name
+                name: board.owner_name || board.name.replace("'s Board", ""), // ← Cleaner name
                 owner: board.owner,
                 ownerName: board.owner_name || '',
                 description: board.description || '',
