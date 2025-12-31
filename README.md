@@ -153,18 +153,6 @@ EA-Task-Tracker/
 
 ---
 
-## 👥 Team & Roles
-
-**Current Users:**
-- **Ann Madigo** - Solution Architect
-- **Faith N. Oling'a** - Enterprise Architect
-- **Simon Thuku** - Architect
-- **Duncan Situma** - Architect
-
-**Total**: 68 active EA projects tracked
-
----
-
 ## 📝 Environment Variables
 
 ### Backend (.env)
