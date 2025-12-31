@@ -1,11 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
-"""
-EA Task Tracker - Django Admin Configuration
-Features: Advanced search, filters, custom actions, inline editing
-"""
-from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.urls import reverse
@@ -41,7 +34,6 @@ class UserAdmin(BaseUserAdmin):
 
 
 class ColumnInline(admin.TabularInline):
-    """Inline columns for boards"""
     model = Column
     extra = 0
     fields = ['name', 'color', 'position', 'task_count']
@@ -57,7 +49,6 @@ class ColumnInline(admin.TabularInline):
 
 @admin.register(Board)
 class BoardAdmin(admin.ModelAdmin):
-    """Board administration"""
     list_display = ['name', 'owner_link', 'task_count', 'created_at', 'updated_at']
     list_filter = ['owner', 'created_at']
     search_fields = ['name', 'description', 'owner__username']
@@ -75,7 +66,7 @@ class BoardAdmin(admin.ModelAdmin):
     ]
     
     def owner_link(self, obj):
-        url = reverse('admin:ea_tracker_user_change', args=[obj.owner.id])
+        url = reverse('admin:tasks_user_change', args=[obj.owner.id])  # ✅ fixed
         return format_html('<a href="{}">{}</a>', url, obj.owner.username)
     owner_link.short_description = 'Owner'
     
@@ -86,7 +77,6 @@ class BoardAdmin(admin.ModelAdmin):
 
 @admin.register(Column)
 class ColumnAdmin(admin.ModelAdmin):
-    """Column administration"""
     list_display = ['name', 'board', 'color_display', 'position', 'task_count']
     list_filter = ['board']
     search_fields = ['name', 'board__name']
@@ -105,7 +95,6 @@ class ColumnAdmin(admin.ModelAdmin):
 
 
 class TaskHistoryInline(admin.TabularInline):
-    """Inline task history"""
     model = TaskHistory
     extra = 0
     readonly_fields = ['field_name', 'old_value', 'new_value', 'changed_by', 'changed_at', 'change_type']
@@ -115,7 +104,6 @@ class TaskHistoryInline(admin.TabularInline):
 
 
 class CommentInline(admin.TabularInline):
-    """Inline comments"""
     model = Comment
     extra = 0
     readonly_fields = ['user', 'created_at']
@@ -124,7 +112,6 @@ class CommentInline(admin.TabularInline):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    """Enhanced task administration with all features"""
     list_display = [
         'title', 'status_badge', 'priority_badge', 'owner_link', 
         'assigned_to_link', 'due_date_display', 'progress_display'
@@ -216,14 +203,14 @@ class TaskAdmin(admin.ModelAdmin):
     
     def owner_link(self, obj):
         if obj.owner:
-            url = reverse('admin:ea_tracker_user_change', args=[obj.owner.id])
+            url = reverse('admin:tasks_user_change', args=[obj.owner.id])  # ✅
             return format_html('<a href="{}">{}</a>', url, obj.owner.username)
         return '-'
     owner_link.short_description = 'Owner'
     
     def assigned_to_link(self, obj):
         if obj.assigned_to:
-            url = reverse('admin:ea_tracker_user_change', args=[obj.assigned_to.id])
+            url = reverse('admin:tasks_user_change', args=[obj.assigned_to.id])  # ✅
             return format_html('<a href="{}">{}</a>', url, obj.assigned_to.username)
         return '-'
     assigned_to_link.short_description = 'Assigned To'
@@ -241,7 +228,6 @@ class TaskAdmin(admin.ModelAdmin):
     due_date_display.short_description = 'Due Date'
     
     def progress_display(self, obj):
-        """Show progress based on design/dev/sit status"""
         statuses = [obj.design_status, obj.dev_status, obj.sit_status]
         completed = sum(1 for s in statuses if 'complete' in str(s).lower())
         total = len([s for s in statuses if s])
@@ -270,7 +256,6 @@ class TaskAdmin(admin.ModelAdmin):
         return obj.history.count()
     history_count.short_description = 'History'
     
-    # Custom actions
     def mark_in_progress(self, request, queryset):
         updated = queryset.update(status='In Progress')
         self.message_user(request, f'{updated} tasks marked as In Progress')
@@ -288,7 +273,6 @@ class TaskAdmin(admin.ModelAdmin):
     mark_high_priority.short_description = 'Mark as High priority'
     
     def export_as_csv(self, request, queryset):
-        """Export selected tasks as CSV"""
         import csv
         from django.http import HttpResponse
         
@@ -312,7 +296,6 @@ class TaskAdmin(admin.ModelAdmin):
     export_as_csv.short_description = 'Export selected as CSV'
     
     def send_reminder(self, request, queryset):
-        """Send reminder notifications"""
         count = 0
         for task in queryset:
             if task.assigned_to:
@@ -330,7 +313,6 @@ class TaskAdmin(admin.ModelAdmin):
 
 @admin.register(TaskHistory)
 class TaskHistoryAdmin(admin.ModelAdmin):
-    """Task history admin (read-only)"""
     list_display = ['task_link', 'field_name', 'changed_by_link', 'change_type', 'changed_at']
     list_filter = ['change_type', 'changed_at', 'changed_by']
     search_fields = ['task__title', 'field_name', 'changed_by__username']
@@ -344,13 +326,13 @@ class TaskHistoryAdmin(admin.ModelAdmin):
         return request.user.is_superuser
     
     def task_link(self, obj):
-        url = reverse('admin:ea_tracker_task_change', args=[obj.task.id])
+        url = reverse('admin:tasks_task_change', args=[obj.task.id])  # ✅
         return format_html('<a href="{}">{}</a>', url, obj.task.title[:50])
     task_link.short_description = 'Task'
     
     def changed_by_link(self, obj):
         if obj.changed_by:
-            url = reverse('admin:ea_tracker_user_change', args=[obj.changed_by.id])
+            url = reverse('admin:tasks_user_change', args=[obj.changed_by.id])  # ✅
             return format_html('<a href="{}">{}</a>', url, obj.changed_by.username)
         return '-'
     changed_by_link.short_description = 'Changed By'
@@ -358,19 +340,18 @@ class TaskHistoryAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    """Comment administration"""
     list_display = ['task_link', 'user_link', 'content_preview', 'created_at']
     list_filter = ['created_at', 'user']
     search_fields = ['content', 'task__title', 'user__username']
     readonly_fields = ['created_at', 'updated_at']
     
     def task_link(self, obj):
-        url = reverse('admin:ea_tracker_task_change', args=[obj.task.id])
+        url = reverse('admin:tasks_task_change', args=[obj.task.id])  # ✅
         return format_html('<a href="{}">{}</a>', url, obj.task.title[:50])
     task_link.short_description = 'Task'
     
     def user_link(self, obj):
-        url = reverse('admin:ea_tracker_user_change', args=[obj.user.id])
+        url = reverse('admin:tasks_user_change', args=[obj.user.id])  # ✅
         return format_html('<a href="{}">{}</a>', url, obj.user.username)
     user_link.short_description = 'User'
     
@@ -381,19 +362,18 @@ class CommentAdmin(admin.ModelAdmin):
 
 @admin.register(Attachment)
 class AttachmentAdmin(admin.ModelAdmin):
-    """Attachment administration"""
     list_display = ['filename', 'task_link', 'uploaded_by_link', 'file_size_display', 'created_at']
     list_filter = ['file_type', 'created_at', 'uploaded_by']
     search_fields = ['filename', 'task__title']
     readonly_fields = ['created_at', 'file_size', 'file_type']
     
     def task_link(self, obj):
-        url = reverse('admin:ea_tracker_task_change', args=[obj.task.id])
+        url = reverse('admin:tasks_task_change', args=[obj.task.id])  # ✅
         return format_html('<a href="{}">{}</a>', url, obj.task.title[:50])
     task_link.short_description = 'Task'
     
     def uploaded_by_link(self, obj):
-        url = reverse('admin:ea_tracker_user_change', args=[obj.uploaded_by.id])
+        url = reverse('admin:tasks_user_change', args=[obj.uploaded_by.id])  # ✅
         return format_html('<a href="{}">{}</a>', url, obj.uploaded_by.username)
     uploaded_by_link.short_description = 'Uploaded By'
     
@@ -406,21 +386,22 @@ class AttachmentAdmin(admin.ModelAdmin):
         return f"{size:.1f} TB"
     file_size_display.short_description = 'File Size'
 
-    
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    """Report administration"""
     list_display = ['name', 'report_type', 'format', 'generated_by_link', 'row_count', 'generated_at']
     list_filter = ['report_type', 'format', 'generated_at']
     search_fields = ['name']
     readonly_fields = ['generated_at', 'row_count']
 
+    def generated_by_link(self, obj):
+        url = reverse('admin:tasks_user_change', args=[obj.generated_by.id])  # ✅ already correct
+        return format_html('<a href="{}">{}</a>', url, obj.generated_by.username)
+    generated_by_link.short_description = 'Generated By'
 
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    """Notification administration"""
     list_display = ['title', 'user_link', 'notification_type', 'is_read', 'created_at']
     list_filter = ['notification_type', 'is_read', 'created_at']
     search_fields = ['title', 'message', 'user__username']
@@ -429,7 +410,7 @@ class NotificationAdmin(admin.ModelAdmin):
     actions = ['mark_as_read', 'mark_as_unread']
     
     def user_link(self, obj):
-        url = reverse('admin:ea_tracker_user_change', args=[obj.user.id])
+        url = reverse('admin:tasks_user_change', args=[obj.user.id])  # ✅
         return format_html('<a href="{}">{}</a>', url, obj.user.username)
     user_link.short_description = 'User'
     
@@ -446,13 +427,15 @@ class NotificationAdmin(admin.ModelAdmin):
 
 @admin.register(SearchQuery)
 class SearchQueryAdmin(admin.ModelAdmin):
-    """Search query analytics"""
     list_display = ['query', 'user_link', 'results_count', 'created_at']
     list_filter = ['created_at', 'user']
     search_fields = ['query']
     readonly_fields = ['created_at']
     
     def user_link(self, obj):
-        url = reverse('admin:ea_tracker_user_change', args=[obj.user.id])
+        url = reverse('admin:tasks_user_change', args=[obj.user.id])  # ✅
         return format_html('<a href="{}">{}</a>', url, obj.user.username)
     user_link.short_description = 'User'
+
+
+    
