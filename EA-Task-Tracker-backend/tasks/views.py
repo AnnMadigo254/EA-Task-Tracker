@@ -37,7 +37,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """User management"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['username', 'email', 'first_name', 'last_name', 'employee_id']
     ordering_fields = ['username', 'department', 'role']
@@ -60,17 +60,15 @@ class BoardViewSet(viewsets.ModelViewSet):
     """Board management with statistics"""
     queryset = Board.objects.all()
     serializer_class = BoardSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description', 'owner__username']
     ordering_fields = ['name', 'created_at', 'updated_at']
     
     def get_queryset(self):
-        """Filter boards by user role"""
-        user = self.request.user
-        if user.role == 'admin':
-            return Board.objects.all()
-        return Board.objects.filter(owner=user)
+        """Return all boards - no filtering"""
+        return Board.objects.all()  # ← Change this line
+
     
     @action(detail=True, methods=['get'])
     def export(self, request, pk=None):
@@ -102,7 +100,7 @@ class ColumnViewSet(viewsets.ModelViewSet):
     """Column management"""
     queryset = Column.objects.all()
     serializer_class = ColumnSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         """Filter by board if specified"""
@@ -116,7 +114,7 @@ class ColumnViewSet(viewsets.ModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     """Task management with advanced search and filtering"""
     queryset = Task.objects.all()
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['title', 'description', 'project_name', 'task_name', 'stakeholder']
     ordering_fields = ['priority', 'due_date', 'created_at', 'updated_at', 'position']
@@ -372,7 +370,7 @@ class TaskHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     """Task history (read-only)"""
     queryset = TaskHistory.objects.all()
     serializer_class = TaskHistorySerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         """Filter by task if specified"""
@@ -387,7 +385,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Comments on tasks"""
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         """Filter by task if specified"""
@@ -416,7 +414,7 @@ class AttachmentViewSet(viewsets.ModelViewSet):
     """File attachments"""
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def perform_create(self, serializer):
         """Upload file with metadata"""
@@ -433,7 +431,7 @@ class ReportViewSet(viewsets.ModelViewSet):
     """Report generation and management"""
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     @action(detail=False, methods=['post'])
     def generate_task_summary(self, request):
@@ -522,7 +520,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     """User notifications"""
     queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         """Get notifications for current user"""
