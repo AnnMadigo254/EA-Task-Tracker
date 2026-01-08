@@ -166,29 +166,17 @@
 // }
 
 
-
 // src/services/api.js
 import axios from 'axios';
 
-// Create axios instance with credentials (for session cookies)
+// Create axios instance - NO AUTH REQUIRED
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/',
-  withCredentials: true, // ← Critical: sends sessionid cookie
+  baseURL: 'http://127.0.0.1:8000/api/',
+  withCredentials: false, // ← No credentials needed
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
-// Optional: expose a lightweight auth check
-api.isAuthenticated = async () => {
-  try {
-    // Use a simple endpoint that requires auth
-    await api.get('/boards/');
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 // API Methods
 export default {
@@ -213,9 +201,25 @@ export default {
     return api.delete(`/boards/${id}/`);
   },
 
+  getBoardStatistics(id) {
+    return api.get(`/boards/${id}/statistics/`);
+  },
+
   // ========== Columns ==========
   getColumns(boardId) {
     return api.get('/columns/', { params: { board: boardId } });
+  },
+
+  createColumn(data) {
+    return api.post('/columns/', data);
+  },
+
+  updateColumn(id, data) {
+    return api.put(`/columns/${id}/`, data);
+  },
+
+  deleteColumn(id) {
+    return api.delete(`/columns/${id}/`);
   },
 
   // ========== Tasks ==========
@@ -243,10 +247,16 @@ export default {
     return api.delete(`/tasks/${id}/`);
   },
 
-  // ✅ No moveTask needed — use patchTask({ column: id }) instead
-  // But if you keep it for convenience, just use PATCH:
   moveTask(id, columnId) {
-    return api.patch(`/tasks/${id}/`, { column: columnId });
+    return api.post(`/tasks/${id}/move/`, { column_id: columnId });
+  },
+
+  completeTask(id) {
+    return api.post(`/tasks/${id}/complete/`);
+  },
+
+  searchTasks(query, filters = {}) {
+    return api.post('/tasks/search/', { query, ...filters });
   },
 
   // ========== Comments ==========
@@ -258,10 +268,49 @@ export default {
     return api.post('/comments/', data);
   },
 
+  updateComment(id, data) {
+    return api.put(`/comments/${id}/`, data);
+  },
+
   deleteComment(id) {
     return api.delete(`/comments/${id}/`);
   },
 
-  // ========== Optional: Auth Check ==========
-  isAuthenticated: api.isAuthenticated,
+  // ========== Attachments ==========
+  getAttachments(taskId) {
+    return api.get('/attachments/', { params: { task: taskId } });
+  },
+
+  uploadAttachment(taskId, file) {
+    const formData = new FormData();
+    formData.append('task', taskId);
+    formData.append('file', file);
+
+    return api.post('/attachments/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
+  deleteAttachment(id) {
+    return api.delete(`/attachments/${id}/`);
+  },
+
+  // ========== Notifications ==========
+  getNotifications() {
+    return api.get('/notifications/');
+  },
+
+  markNotificationAsRead(id) {
+    return api.post(`/notifications/${id}/mark_read/`);
+  },
+
+  markAllNotificationsAsRead() {
+    return api.post('/notifications/mark_all_read/');
+  },
+
+  getUnreadCount() {
+    return api.get('/notifications/unread_count/');
+  },
 };

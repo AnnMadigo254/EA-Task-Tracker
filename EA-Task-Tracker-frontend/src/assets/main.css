@@ -12,6 +12,7 @@
   src: url("/fonts/PlusJakartaSans-Bold.ttf");
   font-weight: bold;
 }
+
 body {
   max-height: 100vh;
   overflow: hidden;
@@ -23,42 +24,57 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-size: 0.94rem;
 }
+
 #app {
   display: flex;
   flex-direction: column;
 }
-/* ===== Scrollbar CSS ===== */
+
+/* ===== Scrollbar CSS - Co-op Bank Green ===== */
 /* Firefox */
 * {
-  scrollbar-width: auto;
-  scrollbar-color: #635fc7 #ffffff;
+  scrollbar-width: thin;
+  scrollbar-color: #00A86B #ffffff;
 }
-
 
 /* Chrome, Edge, and Safari */
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
 }
 
 *::-webkit-scrollbar-track {
   background: #ffffff;
+  border-radius: 10px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #635fc7;
+  background-color: #00A86B; /* Co-op Bank Green */
   border-radius: 10px;
   border: 3px solid #ffffff;
 }
-.dark * {
-  scrollbar-width: auto;
-  scrollbar-color: #635fc7 #2b2c37;
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #00C853; /* Brighter green on hover */
 }
+
+/* Dark mode scrollbar */
+.dark * {
+  scrollbar-width: thin;
+  scrollbar-color: #00A86B #2b2c37;
+}
+
 .dark *::-webkit-scrollbar-track {
   background: #2b2c37;
+  border-radius: 10px;
 }
+
 .dark *::-webkit-scrollbar-thumb {
-  background-color: #635fc7;
+  background-color: #00A86B; /* Co-op Bank Green */
   border-radius: 10px;
   border: 3px solid #2b2c37;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: #00C853; /* Brighter green on hover */
 }

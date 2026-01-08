@@ -1,6 +1,6 @@
 <template>
   <div class="flex gap-6 ">
-    <section data-dragscroll v-for="(column, columnIndex) in filteredColumns" :key="columnIndex"
+    <section data-dragscroll v-for="(column, columnIndex) in boardsStore.getColumns" :key="columnIndex"
       class="min-w-[280px] box-content flex flex-col" @dragover.prevent>
       <div class="flex items-center gap-3 pb-6 ">
         <div class="rounded-full h-4 w-4" :style="{ backgroundColor: column.color }"></div>
@@ -10,14 +10,14 @@
       </div>
       <TransitionGroup tag="div" name="tasks" data-dragscroll class="flex flex-col gap-5">
         <div v-for="(task, taskIndex) in column?.tasks" :key="task.id">
-          <BoardTask :task="task" @click="onClickTask(column.originalIndex, taskIndex)"
-            @dragstart="onDragTask($event, task, column.originalIndex, taskIndex)"
-            @dragenter="onDragEnterTask($event, task, column.originalIndex, taskIndex)" draggable="true"
+          <BoardTask :task="task" @click="onClickTask(columnIndex, taskIndex)"
+            @dragstart="onDragTask($event, task, columnIndex, taskIndex)"
+            @dragenter="onDragEnterTask($event, task, columnIndex, taskIndex)" draggable="true"
             @dragend="onDragEnd($event)" @dragleave.prevent="onDragLeaveTask($event)"
-            :class="[(tempTask?.taskIndex === taskIndex) && (tempTask?.columnIndex === column.originalIndex) ? tempTaskStyle : '', (draggedTask?.task?.id === task.id) ? 'opacity-50' : '']" />
+            :class="[(tempTask?.taskIndex === taskIndex) && (tempTask?.columnIndex === columnIndex) ? tempTaskStyle : '', (draggedTask?.task?.id === task.id) ? 'opacity-50' : '']" />
         </div>
       </TransitionGroup>
-      <div @dragenter="onDragEnterColumn(column.originalIndex)" class="h-full mt-5" />
+      <div @dragenter="onDragEnterColumn(columnIndex)" class="h-full mt-5" />
     </section>
     <AddNewColumn />
   </div>
@@ -28,26 +28,13 @@ import BoardTask from "@/components/board/Task.vue";
 import AddNewColumn from '@/components/board/AddNewColumn.vue';
 import { useBoardsStore } from '@/stores/boards.js';
 import { useManagerStore } from '@/stores/manager';
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 const managerStore = useManagerStore();
 const boardsStore = useBoardsStore();
 const draggedTask = ref(null)
 let tempTaskStyle = ['border-main-purple', 'border-2']
 const tempTask = ref(null) //For visual feedback
-
-// Filter to show "To Do", "In Progress" and "Done" columns
-const filteredColumns = computed(() => {
-  const columns = boardsStore.getColumns;
-  const allowedColumns = ['To Do', 'In Progress', 'Done']; // Three-column workflow
-  
-  return columns
-    .map((column, index) => ({
-      ...column,
-      originalIndex: index // Keep track of original index for drag/drop
-    }))
-    .filter(column => allowedColumns.includes(column.name));
-});
 
 const onDragTask = (evt, task, columnIndex, taskIndex) => {
   managerStore.dragging = true
@@ -86,10 +73,20 @@ const onDragLeaveTask = (evt) => {
 
 }
 
-const onDragEnd = (evt) => {
+const onDragEnd = async (evt) => {
   if (tempTask.value) {
     const sameColumn = draggedTask.value?.columnIndex === tempTask.value?.columnIndex
     const isAbove = draggedTask.value?.taskIndex > tempTask.value?.taskIndex
+    
+    // Update task column in API if column changed
+    if (!sameColumn && draggedTask.value?.task?.id) {
+      try {
+        const newColumn = boardsStore.getCurrentBoard.columns[tempTask.value.columnIndex]
+        await boardsStore.moveTaskApi(draggedTask.value.task.id, newColumn.id)
+      } catch (error) {
+        console.error('Failed to update task column:', error)
+      }
+    }
   } else {
     boardsStore.getCurrentBoard.columns[draggedTask.value.columnIndex].tasks.splice(draggedTask.value.taskIndex, 0, draggedTask.value.task)
   }
