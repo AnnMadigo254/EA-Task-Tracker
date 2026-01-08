@@ -1,0 +1,69 @@
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ea_tracker_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: CoopBank2025!
+      MYSQL_DATABASE: ea_task_tracker
+      MYSQL_USER: ea_user
+      MYSQL_PASSWORD: CoopBank2025!
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ea_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uea_user", "-pCoopBank2025!"]
+      timeout: 20s
+      retries: 10
+      interval: 5s
+
+  backend:
+    build:
+      context: ./EA-Task-Tracker-backend
+      dockerfile: Dockerfile
+    container_name: ea_tracker_backend
+    restart: always
+    env_file:
+      - ./EA-Task-Tracker-backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./EA-Task-Tracker-backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ea_network
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build:
+      context: ./EA-Task-Tracker-frontend
+      dockerfile: Dockerfile
+    container_name: ea_tracker_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - ea_network
+
+volumes:
+  mysql_data:
+  static_volume:
+  media_volume:
+
+networks:
+  ea_network:
+    driver: bridge
+

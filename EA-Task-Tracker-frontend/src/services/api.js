@@ -1,316 +1,197 @@
-// import axios from 'axios'
+// // src/services/api.js
+// import axios from 'axios';
 
-// // Create axios instance
+// // Create axios instance - NO AUTH REQUIRED
 // const api = axios.create({
-//   baseURL: 'http://127.0.0.1:8000/api',
+//   baseURL: 'http://127.0.0.1:8000/api/',
+//   withCredentials: false, // ← No credentials needed
 //   headers: {
 //     'Content-Type': 'application/json',
 //   },
-// })
-
-// // Request interceptor - add JWT token
-// api.interceptors.request.use(
-//   (config) => {
-//     const token = localStorage.getItem('access_token')
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`
-//     }
-//     return config
-//   },
-//   (error) => {
-//     return Promise.reject(error)
-//   }
-// )
-
-// // Response interceptor - handle token refresh
-// api.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const originalRequest = error.config
-
-//     // If 401 and not already retried
-//     if (error.response?.status === 401 && !originalRequest._retry) {
-//       originalRequest._retry = true
-
-//       try {
-//         const refreshToken = localStorage.getItem('refresh_token')
-//         const response = await axios.post('http://127.0.0.1:8000/api/auth/refresh/', {
-//           refresh: refreshToken,
-//         })
-
-//         const { access } = response.data
-//         localStorage.setItem('access_token', access)
-
-//         // Retry original request with new token
-//         originalRequest.headers.Authorization = `Bearer ${access}`
-//         return axios(originalRequest)
-//       } catch (refreshError) {
-//         // Refresh failed - logout
-//         localStorage.removeItem('access_token')
-//         localStorage.removeItem('refresh_token')
-//         return Promise.reject(refreshError)
-//       }
-//     }
-
-//     return Promise.reject(error)
-//   }
-// )
+// });
 
 // // API Methods
 // export default {
-//   // ========== Authentication ==========
-//   async login(username, password) {
-//     const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
-//       username,
-//       password,
-//     })
-//     const { access, refresh } = response.data
-//     localStorage.setItem('access_token', access)
-//     localStorage.setItem('refresh_token', refresh)
-//     return response.data
-//   },
-
-//   logout() {
-//     localStorage.removeItem('access_token')
-//     localStorage.removeItem('refresh_token')
-//   },
-
-//   isAuthenticated() {
-//     return !!localStorage.getItem('access_token')
-//   },
-
-//   // ========== Users ==========
-//   getUsers() {
-//     return api.get('/users/')
-//   },
-
-//   getCurrentUser() {
-//     return api.get('/users/me/')
-//   },
-
-//   getArchitects() {
-//     return api.get('/users/architects/')
-//   },
-
 //   // ========== Boards ==========
 //   getBoards() {
-//     return api.get('/boards/')
+//     return api.get('/boards/');
 //   },
 
 //   getBoard(id) {
-//     return api.get(`/boards/${id}/`)
+//     return api.get(`/boards/${id}/`);
 //   },
 
 //   createBoard(data) {
-//     return api.post('/boards/', data)
+//     return api.post('/boards/', data);
 //   },
 
 //   updateBoard(id, data) {
-//     return api.put(`/boards/${id}/`, data)
+//     return api.put(`/boards/${id}/`, data);
 //   },
 
 //   deleteBoard(id) {
-//     return api.delete(`/boards/${id}/`)
+//     return api.delete(`/boards/${id}/`);
 //   },
 
 //   getBoardStatistics(id) {
-//     return api.get(`/boards/${id}/statistics/`)
+//     return api.get(`/boards/${id}/statistics/`);
 //   },
 
 //   // ========== Columns ==========
 //   getColumns(boardId) {
-//     return api.get('/columns/', { params: { board: boardId } })
+//     return api.get('/columns/', { params: { board: boardId } });
+//   },
+
+//   createColumn(data) {
+//     return api.post('/columns/', data);
+//   },
+
+//   updateColumn(id, data) {
+//     return api.put(`/columns/${id}/`, data);
+//   },
+
+//   deleteColumn(id) {
+//     return api.delete(`/columns/${id}/`);
 //   },
 
 //   // ========== Tasks ==========
 //   getTasks(filters = {}) {
-//     return api.get('/tasks/', { params: filters })
+//     return api.get('/tasks/', { params: filters });
 //   },
 
 //   getTask(id) {
-//     return api.get(`/tasks/${id}/`)
+//     return api.get(`/tasks/${id}/`);
 //   },
 
 //   createTask(data) {
-//     return api.post('/tasks/', data)
+//     return api.post('/tasks/', data);
 //   },
 
 //   updateTask(id, data) {
-//     return api.put(`/tasks/${id}/`, data)
+//     return api.put(`/tasks/${id}/`, data);
 //   },
 
 //   patchTask(id, data) {
-//     return api.patch(`/tasks/${id}/`, data)
+//     return api.patch(`/tasks/${id}/`, data);
 //   },
 
 //   deleteTask(id) {
-//     return api.delete(`/tasks/${id}/`)
+//     return api.delete(`/tasks/${id}/`);
 //   },
 
 //   moveTask(id, columnId) {
-//     return api.post(`/tasks/${id}/move/`, { column_id: columnId })
+//     return api.post(`/tasks/${id}/move/`, { column_id: columnId });
+//   },
+
+//   completeTask(id) {
+//     return api.post(`/tasks/${id}/complete/`);
+//   },
+
+//   searchTasks(query, filters = {}) {
+//     return api.post('/tasks/search/', { query, ...filters });
 //   },
 
 //   // ========== Comments ==========
 //   getComments(taskId) {
-//     return api.get('/comments/', { params: { task: taskId } })
+//     return api.get('/comments/', { params: { task: taskId } });
 //   },
 
 //   createComment(data) {
-//     return api.post('/comments/', data)
+//     return api.post('/comments/', data);
+//   },
+
+//   updateComment(id, data) {
+//     return api.put(`/comments/${id}/`, data);
 //   },
 
 //   deleteComment(id) {
-//     return api.delete(`/comments/${id}/`)
+//     return api.delete(`/comments/${id}/`);
 //   },
-// }
+
+//   // ========== Attachments ==========
+//   getAttachments(taskId) {
+//     return api.get('/attachments/', { params: { task: taskId } });
+//   },
+
+//   uploadAttachment(taskId, file) {
+//     const formData = new FormData();
+//     formData.append('task', taskId);
+//     formData.append('file', file);
+
+//     return api.post('/attachments/', formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//       },
+//     });
+//   },
+
+//   deleteAttachment(id) {
+//     return api.delete(`/attachments/${id}/`);
+//   },
+
+//   // ========== Notifications ==========
+//   getNotifications() {
+//     return api.get('/notifications/');
+//   },
+
+//   markNotificationAsRead(id) {
+//     return api.post(`/notifications/${id}/mark_read/`);
+//   },
+
+//   markAllNotificationsAsRead() {
+//     return api.post('/notifications/mark_all_read/');
+//   },
+
+//   getUnreadCount() {
+//     return api.get('/notifications/unread_count/');
+//   },
+// };
 
 
-// src/services/api.js
+
+
 import axios from 'axios';
 
-// Create axios instance - NO AUTH REQUIRED
+// Use relative URL for Docker (nginx will proxy to backend)
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/',
-  withCredentials: false, // ← No credentials needed
+  baseURL: '/api/',  // Changed from http://127.0.0.1:8000/api/
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// API Methods
+// Keep all your existing methods
 export default {
-  // ========== Boards ==========
   getBoards() {
     return api.get('/boards/');
   },
-
+  
   getBoard(id) {
     return api.get(`/boards/${id}/`);
   },
-
-  createBoard(data) {
-    return api.post('/boards/', data);
-  },
-
-  updateBoard(id, data) {
-    return api.put(`/boards/${id}/`, data);
-  },
-
-  deleteBoard(id) {
-    return api.delete(`/boards/${id}/`);
-  },
-
-  getBoardStatistics(id) {
-    return api.get(`/boards/${id}/statistics/`);
-  },
-
-  // ========== Columns ==========
+  
   getColumns(boardId) {
     return api.get('/columns/', { params: { board: boardId } });
   },
-
-  createColumn(data) {
-    return api.post('/columns/', data);
-  },
-
-  updateColumn(id, data) {
-    return api.put(`/columns/${id}/`, data);
-  },
-
-  deleteColumn(id) {
-    return api.delete(`/columns/${id}/`);
-  },
-
-  // ========== Tasks ==========
+  
   getTasks(filters = {}) {
     return api.get('/tasks/', { params: filters });
   },
-
-  getTask(id) {
-    return api.get(`/tasks/${id}/`);
-  },
-
+  
   createTask(data) {
     return api.post('/tasks/', data);
   },
-
-  updateTask(id, data) {
-    return api.put(`/tasks/${id}/`, data);
-  },
-
+  
   patchTask(id, data) {
     return api.patch(`/tasks/${id}/`, data);
   },
-
+  
   deleteTask(id) {
     return api.delete(`/tasks/${id}/`);
   },
-
+  
   moveTask(id, columnId) {
     return api.post(`/tasks/${id}/move/`, { column_id: columnId });
-  },
-
-  completeTask(id) {
-    return api.post(`/tasks/${id}/complete/`);
-  },
-
-  searchTasks(query, filters = {}) {
-    return api.post('/tasks/search/', { query, ...filters });
-  },
-
-  // ========== Comments ==========
-  getComments(taskId) {
-    return api.get('/comments/', { params: { task: taskId } });
-  },
-
-  createComment(data) {
-    return api.post('/comments/', data);
-  },
-
-  updateComment(id, data) {
-    return api.put(`/comments/${id}/`, data);
-  },
-
-  deleteComment(id) {
-    return api.delete(`/comments/${id}/`);
-  },
-
-  // ========== Attachments ==========
-  getAttachments(taskId) {
-    return api.get('/attachments/', { params: { task: taskId } });
-  },
-
-  uploadAttachment(taskId, file) {
-    const formData = new FormData();
-    formData.append('task', taskId);
-    formData.append('file', file);
-
-    return api.post('/attachments/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  },
-
-  deleteAttachment(id) {
-    return api.delete(`/attachments/${id}/`);
-  },
-
-  // ========== Notifications ==========
-  getNotifications() {
-    return api.get('/notifications/');
-  },
-
-  markNotificationAsRead(id) {
-    return api.post(`/notifications/${id}/mark_read/`);
-  },
-
-  markAllNotificationsAsRead() {
-    return api.post('/notifications/mark_all_read/');
-  },
-
-  getUnreadCount() {
-    return api.get('/notifications/unread_count/');
   },
 };
