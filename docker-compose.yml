@@ -20,29 +20,26 @@ services:
       retries: 10
       interval: 5s
 
+
   backend:
-    build:
-      context: ./EA-Task-Tracker-backend
-      dockerfile: Dockerfile
-    container_name: ea_tracker_backend
-    restart: always
-    env_file:
-      - ./EA-Task-Tracker-backend/.env
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./EA-Task-Tracker-backend:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - ea_network
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             python manage.py runserver 0.0.0.0:8000"
+      build:
+        context: ./EA-Task-Tracker-backend
+        dockerfile: Dockerfile
+      container_name: ea_tracker_backend
+      restart: always
+      env_file:
+        - ./EA-Task-Tracker-backend/.env
+      ports:
+        - "8000:8000"
+      volumes:
+        - ./EA-Task-Tracker-backend:/app
+        - static_volume:/app/staticfiles
+        - media_volume:/app/media
+      depends_on:
+        db:
+          condition: service_healthy
+      networks:
+        - ea_network
 
   frontend:
     build:
