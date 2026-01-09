@@ -67,3 +67,4 @@ networks:
   ea_network:
     driver: bridge
 
+ 
