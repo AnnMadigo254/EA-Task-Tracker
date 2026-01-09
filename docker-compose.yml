@@ -1,14 +1,13 @@
-
 services:
   db:
-    image: mysql:8.0
+    image: mariadb:11.2
     container_name: ea_tracker_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: CoopBank2025!
-      MYSQL_DATABASE: ea_task_tracker
-      MYSQL_USER: ea_user
-      MYSQL_PASSWORD: CoopBank2025!
+      MARIADB_ROOT_PASSWORD: CoopBank2025!
+      MARIADB_DATABASE: ea_task_tracker
+      MARIADB_USER: ea_user
+      MARIADB_PASSWORD: CoopBank2025!
     ports:
       - "3306:3306"
     volumes:
@@ -16,7 +15,7 @@ services:
     networks:
       - ea_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uea_user", "-pCoopBank2025!"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       timeout: 20s
       retries: 10
       interval: 5s
@@ -66,5 +65,3 @@ volumes:
 networks:
   ea_network:
     driver: bridge
-
- 
