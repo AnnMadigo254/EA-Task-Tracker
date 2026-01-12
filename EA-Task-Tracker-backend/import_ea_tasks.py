@@ -10,10 +10,12 @@ import pandas as pd
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tasktracker_backend.settings')
 django.setup()
 
+
 from tasks.models import User, Board, Column, Task
 
 # Read the Excel file - header is in row 1 (0-indexed)
-file_path = r"C:\Users\amadigo\tasktracker\kanban-task-management\EA_Tasks.xlsx"
+# file_path = r"C:\Users\amadigo\tasktracker\kanban-task-management\EA_Tasks.xlsx"
+file_path = '/app/EA_Tasks.xlsx'
 
 # Read Excel with header in row 1
 df = pd.read_excel(file_path, header=1)

@@ -27,3 +27,4 @@ EXPOSE 8000
 
 # Use entrypoint script
 ENTRYPOINT ["/app/entrypoint.sh"]
+                                       

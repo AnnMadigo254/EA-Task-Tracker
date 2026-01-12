@@ -15,10 +15,13 @@ python manage.py migrate --noinput
 echo "📦 Collecting static files..."
 python manage.py collectstatic --noinput
 
-# Check if data already exists
-TASK_COUNT=$(python manage.py shell -c "from tasks.models import Task; print(Task.objects.count())")
+# Check if data already exists - Fixed version
+echo "🔍 Checking for existing tasks..."
+TASK_COUNT=$(python manage.py shell -c "from tasks.models import Task; print(Task.objects.count())" 2>&1 | tail -1)
 
-if [ "$TASK_COUNT" -eq "0" ]; then
+echo "Found $TASK_COUNT tasks in database"
+
+if [ "$TASK_COUNT" = "0" ] || [ -z "$TASK_COUNT" ]; then
     echo "📊 No tasks found. Importing EA tasks..."
     
     # Check if Excel file exists
@@ -34,14 +37,8 @@ fi
 
 # Create superuser if it doesn't exist
 echo "👤 Creating superuser..."
-python manage.py shell << END
-from tasks.models import User
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@coopbank.co.ke', 'CoopBank2025!')
-    print('✅ Superuser created: admin / CoopBank2025!')
-else:
-    print('✅ Superuser already exists')
-END
+python manage.py shell -c "from tasks.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@coopbank.co.ke', 'CoopBank2025!')" 2>&1 | grep -v "objects imported"
+echo "✅ Superuser check complete"
 
 # Start Django server
 echo "🚀 Starting Django server..."
