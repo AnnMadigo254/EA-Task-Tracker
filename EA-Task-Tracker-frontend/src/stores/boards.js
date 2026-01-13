@@ -1,43 +1,3 @@
-// import { defineStore } from "pinia";
-
-// export const useBoardsStore = defineStore({
-//   id: "boards",
-//   state: () => ({
-//     boards: [],
-//     selectedBoard: 0,
-//     selectedColumn: 0,
-//     selectedTask: 0,
-//   }),
-//   getters: {
-//     getColumns: (state) => state.boards[state.selectedBoard]?.columns,
-//     getCurrentBoard: (state) => state.boards[state.selectedBoard],
-//     getCurrentColumn: (state) =>
-//       state.boards[state.selectedBoard]?.columns[state.selectedColumn],
-//     getTask: (state) =>
-//       state.boards[state.selectedBoard]?.columns[state.selectedColumn]?.tasks[
-//         state.selectedTask
-//       ],
-//     getColumnsNames: (state) =>
-//       state.boards[state.selectedBoard]?.columns.map((c) => c.name),
-//   },
-//   actions: {
-//     changeTaskColumn(index) {
-//       if (!(index === this.selectedColumn)) {
-//         this.getCurrentBoard?.columns[index]?.tasks.push(this.getTask);
-//         this.getCurrentColumn?.tasks.splice(this.selectedTask, 1);
-//         this.selectedColumn = index;
-//         this.selectedTask = this.getCurrentColumn?.tasks.length - 1;
-//       }
-//     },
-//     saveTaskChanges({ task, column }) {
-//       this.getCurrentColumn.tasks[this.selectedTask] = task;
-//       if (this.selectedColumn !== column) {
-//         this.changeTaskColumn(column);
-//       }
-//     },
-//   },
-// });
-
 import { defineStore } from "pinia";
 import api from '@/services/api';
 
@@ -48,6 +8,7 @@ export const useBoardsStore = defineStore({
     selectedBoard: 0,
     selectedColumn: 0,
     selectedTask: 0,
+    selectedQuarter: 'Q1_2026', // Add current quarter
     loading: false,
     error: null,
   }),
@@ -66,7 +27,7 @@ export const useBoardsStore = defineStore({
   actions: {
     // ========== API Actions ==========
 
-    async fetchBoards() {
+    async fetchBoards(quarter = null) {
       this.loading = true;
       this.error = null;
 
@@ -81,8 +42,13 @@ export const useBoardsStore = defineStore({
               const columnsResponse = await api.getColumns(board.id);
               const columns = columnsResponse.data.results || columnsResponse.data;
 
-              // Fetch all tasks for this board
-              const tasksResponse = await api.getTasks({ board: board.id });
+              // Fetch tasks with quarter filter if specified
+              const filters = { board: board.id };
+              if (quarter || this.selectedQuarter) {
+                filters.quarter = quarter || this.selectedQuarter;
+              }
+              
+              const tasksResponse = await api.getTasks(filters);
               const tasks = tasksResponse.data.results || tasksResponse.data;
 
               // Organize tasks under each column
@@ -103,6 +69,8 @@ export const useBoardsStore = defineStore({
                       status: task.status,
                       priority: task.priority,
                       position: task.position,
+                      // Quarter field
+                      quarter: task.quarter || 'Q1_2026',
                       // EA-specific fields (snake_case → camelCase)
                       projectName: task.project_name || '',
                       taskName: task.task_name || '',
@@ -179,6 +147,7 @@ export const useBoardsStore = defineStore({
           priority: taskData.priority || 'Medium',
           status: 'To Do',
           position: column.tasks.length,
+          quarter: taskData.quarter || this.selectedQuarter || 'Q1_2026', // Add quarter
           // EA fields
           design_status: taskData.designStatus || '',
           dev_status: taskData.devStatus || '',
@@ -232,6 +201,13 @@ export const useBoardsStore = defineStore({
         this.error = error.response?.data?.detail || error.message;
         throw error;
       }
+    },
+
+    // ========== Quarter Filter ==========
+    
+    setQuarter(quarter) {
+      this.selectedQuarter = quarter;
+      this.fetchBoards(quarter);
     },
 
     // ========== Local UI Actions ==========

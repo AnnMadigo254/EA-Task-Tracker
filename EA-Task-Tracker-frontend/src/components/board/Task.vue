@@ -1,36 +1,13 @@
-<!-- <template>
-  <article class="group flex flex-col bg-white dark:bg-dark-grey p-4 rounded-lg cursor-pointer shadow-task max-w-[280px]">
-    <h3 class="text-black dark:text-white font-bold select-none pointer-events-none"
-      :class="managerStore.dragging ? '' : 'group-hover:text-main-purple'">
-      {{ task.title }}
-    </h3>
-    <p class="text-xs text-medium-grey font-bold select-none pointer-events-none">{{ subtasksCompleted }} substasks</p>
-  </article>
-</template>
-
-<script setup>
-import { computed } from 'vue';
-import { useManagerStore } from '../../stores/manager';
-const managerStore = useManagerStore()
-const props = defineProps({
-  task: {
-    type: Object,
-    required: true
-  }
-})
-
-const subtasksCompleted = computed(() => {
-  const completed = props.task.subtasks.filter((sub) => sub.isCompleted).length;
-  const total = props.task.subtasks.length;
-  return `${completed} of ${total}`
-})
-</script> -->
-
 <template>
   <article class="group flex flex-col bg-white dark:bg-dark-grey p-4 rounded-lg cursor-pointer shadow-task max-w-[280px]">
-    <!-- PROJECT NAME (Prominent) -->
-    <div class="text-xs font-bold text-main-purple mb-1 truncate">
-      {{ task.projectName || '—' }}
+    <!-- Quarter Badge & Project Name -->
+    <div class="flex justify-between items-start mb-2">
+      <div class="text-xs font-bold text-main-purple truncate flex-1">
+        {{ task.projectName || '—' }}
+      </div>
+      <span v-if="task.quarter" class="px-2 py-0.5 text-[10px] font-bold rounded bg-main-purple/10 text-main-purple ml-2 whitespace-nowrap">
+        {{ formatQuarter(task.quarter) }}
+      </span>
     </div>
 
     <!-- TASK TITLE (Bold) -->
@@ -58,7 +35,7 @@ const subtasksCompleted = computed(() => {
 
     <!-- BA/PM & Priority -->
     <div class="flex justify-between items-end mt-auto">
-      <span v-if="task.bapm" class="text-[10px] text-medium-grey">
+      <span v-if="task.bapm" class="text-[10px] text-medium-grey truncate">
         BA/PM: {{ task.bapm }}
       </span>
       <span 
@@ -72,13 +49,17 @@ const subtasksCompleted = computed(() => {
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import { useManagerStore } from '../../stores/manager';
 
 const managerStore = useManagerStore();
 const props = defineProps({
   task: { type: Object, required: true }
 });
+
+const formatQuarter = (quarter) => {
+  if (!quarter) return '';
+  return quarter.replace('_', ' ');
+};
 
 const getPriorityClass = (priority) => {
   const classes = {

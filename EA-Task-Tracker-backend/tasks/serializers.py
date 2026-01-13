@@ -1,6 +1,6 @@
 """
 EA Task Tracker - DRF Serializers
-Features: Nested data, validation, report serialization
+Features: Nested data, validation, report serialization, quarter filtering
 """
 from rest_framework import serializers
 from .models import (
@@ -78,6 +78,7 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = [
             'id', 'column', 'title', 'description', 'task_type',
+            'quarter',  # Add quarter field
             'project_name', 'task_name', 'design_status', 'dev_status', 'sit_status',
             'progress_notes', 'priority', 'status', 'owner', 'owner_name',
             'assigned_to', 'assigned_to_name', 'stakeholder', 'bapm',
@@ -143,11 +144,13 @@ class BoardSerializer(serializers.ModelSerializer):
     total_tasks = serializers.SerializerMethodField()
     tasks_by_status = serializers.SerializerMethodField()
     tasks_by_priority = serializers.SerializerMethodField()
+    tasks_by_quarter = serializers.SerializerMethodField()  # Add quarter stats
     
     class Meta:
         model = Board
         fields = ['id', 'name', 'owner', 'owner_name', 'description', 
                   'columns', 'total_tasks', 'tasks_by_status', 'tasks_by_priority',
+                  'tasks_by_quarter',  # Add quarter field
                   'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
     
@@ -163,6 +166,11 @@ class BoardSerializer(serializers.ModelSerializer):
         from django.db.models import Count
         tasks = Task.objects.filter(column__board=obj)
         return dict(tasks.values_list('priority').annotate(count=Count('id')))
+    
+    def get_tasks_by_quarter(self, obj):
+        from django.db.models import Count
+        tasks = Task.objects.filter(column__board=obj)
+        return dict(tasks.values_list('quarter').annotate(count=Count('id')))
 
 
 class ReportSerializer(serializers.ModelSerializer):
@@ -225,7 +233,8 @@ class TaskReportSerializer(serializers.ModelSerializer):
         model = Task
         fields = [
             'id', 'board_name', 'column_name', 'title', 'project_name',
-            'task_name', 'task_type', 'priority', 'status',
+            'task_name', 'task_type', 'quarter',  # Add quarter
+            'priority', 'status',
             'owner_name', 'assigned_to_name', 'stakeholder', 'bapm',
             'design_status', 'dev_status', 'sit_status',
             'start_date', 'due_date', 'completed_date',
@@ -248,6 +257,7 @@ class TeamPerformanceSerializer(serializers.Serializer):
 class ProjectStatusSerializer(serializers.Serializer):
     """Project status for reports"""
     project_name = serializers.CharField()
+    quarter = serializers.CharField()  # Add quarter
     total_tasks = serializers.IntegerField()
     completed_tasks = serializers.IntegerField()
     in_progress_tasks = serializers.IntegerField()
@@ -285,6 +295,10 @@ class TaskSearchSerializer(serializers.Serializer):
         choices=Task.TASK_TYPE_CHOICES,
         required=False
     )
+    quarter = serializers.MultipleChoiceField(  # Add quarter filter
+        choices=Task.QUARTER_CHOICES,
+        required=False
+    )
     owner = serializers.UUIDField(required=False)
     assigned_to = serializers.UUIDField(required=False)
     start_date_from = serializers.DateField(required=False)
@@ -292,4 +306,15 @@ class TaskSearchSerializer(serializers.Serializer):
     due_date_from = serializers.DateField(required=False)
     due_date_to = serializers.DateField(required=False)
     project_name = serializers.CharField(required=False, allow_blank=True)
-    
+
+
+class QuarterSummarySerializer(serializers.Serializer):
+    """Quarter summary statistics"""
+    quarter = serializers.CharField()
+    total_tasks = serializers.IntegerField()
+    completed_tasks = serializers.IntegerField()
+    in_progress_tasks = serializers.IntegerField()
+    todo_tasks = serializers.IntegerField()
+    completion_rate = serializers.FloatField()
+    high_priority_count = serializers.IntegerField()
+    overdue_count = serializers.IntegerField()

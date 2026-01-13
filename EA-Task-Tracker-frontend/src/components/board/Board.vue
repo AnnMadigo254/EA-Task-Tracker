@@ -9,7 +9,7 @@
         </h2>
       </div>
       <TransitionGroup tag="div" name="tasks" data-dragscroll class="flex flex-col gap-5">
-        <div v-for="(task, taskIndex) in column?.tasks" :key="task.id">
+        <div v-for="(task, taskIndex) in column?.tasks" :key="task.id" v-show="!task.hidden">
           <BoardTask :task="task" @click="onClickTask(columnIndex, taskIndex)"
             @dragstart="onDragTask($event, task, columnIndex, taskIndex)"
             @dragenter="onDragEnterTask($event, task, columnIndex, taskIndex)" draggable="true"

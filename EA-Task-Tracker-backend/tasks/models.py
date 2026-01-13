@@ -1,12 +1,4 @@
 from django.db import models
-
-# Create your models here.
-
-"""
-EA Task Tracker - Enhanced Django Models
-Features: Audit trails, search, historical tracking, reports
-"""
-from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 import uuid
@@ -97,6 +89,17 @@ class Task(models.Model):
         ('Other', 'Other'),
     ]
     
+    QUARTER_CHOICES = [
+        ('Q3_2025', 'Q3 2025'),
+        ('Q4_2025', 'Q4 2025'),
+        ('Q1_2026', 'Q1 2026'),
+        ('Q2_2026', 'Q2 2026'),
+        ('Q3_2026', 'Q3 2026'),
+        ('Q4_2026', 'Q4 2026'),
+        ('Q1_2027', 'Q1 2027'),
+        ('Q2_2027', 'Q2 2027'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='tasks')
     
@@ -104,6 +107,9 @@ class Task(models.Model):
     title = models.CharField(max_length=500)
     description = models.TextField(blank=True)
     task_type = models.CharField(max_length=100, choices=TASK_TYPE_CHOICES, default='Solution Design')
+    
+    # Quarter tracking
+    quarter = models.CharField(max_length=10, choices=QUARTER_CHOICES, default='Q1_2026', db_index=True)
     
     # EA specific fields
     project_name = models.CharField(max_length=300, blank=True)
@@ -147,6 +153,7 @@ class Task(models.Model):
             models.Index(fields=['due_date']),
             models.Index(fields=['created_at']),
             models.Index(fields=['project_name']),
+            models.Index(fields=['quarter']),
         ]
     
     def save(self, *args, **kwargs):
