@@ -30,6 +30,7 @@ import { useBoardsStore } from '@/stores/boards.js';
 import { useManagerStore } from '@/stores/manager';
 import { ref } from "vue";
 
+
 const managerStore = useManagerStore();
 const boardsStore = useBoardsStore();
 const draggedTask = ref(null)
@@ -68,6 +69,7 @@ const onDragEnterTask = (evt, task, columnIndex, taskIndex) => {
     }
   }
 }
+
 
 const onDragLeaveTask = (evt) => {
 
