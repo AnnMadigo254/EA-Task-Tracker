@@ -1,0 +1,60 @@
+services:
+  backend:
+    build:
+      context: ./EA-Task-Tracker-backend
+      dockerfile: Dockerfile
+    container_name: ea_tracker_backend
+    restart: always
+    env_file:
+      - ./EA-Task-Tracker-backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./EA-Task-Tracker-backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    networks:
+      - ea_network
+    command: >
+      sh -c "
+        echo '⏳ Waiting for MariaDB...' &&
+        while ! nc -z db 3306; do sleep 1; done &&
+        echo '✅ MariaDB ready!' &&
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        echo '🔍 Checking for existing tasks...' &&
+        TASK_COUNT=$$(python manage.py shell -c 'from tasks.models import Task; print(Task.objects.count())' 2>&1 | tail -1) &&
+        echo \"Found $$TASK_COUNT tasks in database\" &&
+        if [ \"$$TASK_COUNT\" = \"0\" ] || [ -z \"$$TASK_COUNT\" ]; then
+          echo '📊 No tasks found. Importing EA tasks...' &&
+          if [ -f /app/EA_Tasks.xlsx ]; then
+            python import_ea_tasks.py &&
+            echo '✅ EA tasks imported successfully!';
+          else
+            echo '⚠️  EA_Tasks.xlsx not found. Skipping import.';
+          fi;
+        else
+          echo \"✅ Data already exists ($$TASK_COUNT tasks). Skipping import.\";
+        fi &&
+        echo '👤 Creating superuser...' &&
+        python manage.py shell -c \"from tasks.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@coopbank.co.ke', 'CoopBank2025!')\" 2>&1 | grep -v 'objects imported' &&
+        echo '✅ Superuser check complete' &&
+        echo '🚀 Starting Django server...' &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+
+volumes:
+  static_volume:
+    name: ea_tracker_static_volume
+  media_volume:
+    name: ea_tracker_media_volume
+
+networks:
+  ea_network:
+    name: ea_network
+    external: true
+
+
+
+
+    
