@@ -22,7 +22,7 @@
     <AddNewColumn />
   </div>
 </template>
-
+ 
 <script setup>
 import BoardTask from "@/components/board/Task.vue";
 import AddNewColumn from '@/components/board/AddNewColumn.vue';

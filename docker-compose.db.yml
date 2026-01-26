@@ -8,17 +8,16 @@ services:
       MARIADB_DATABASE: ea_task_tracker
       MARIADB_USER: ea_user
       MARIADB_PASSWORD: CoopBank2025!
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - ea_network
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
-      timeout: 20s
+      test: ["CMD", "bash", "-c", "timeout 5 bash -c '</dev/tcp/127.0.0.1/3306'"]
+      timeout: 5s
       retries: 10
       interval: 5s
+      start_period: 15s
 
 volumes:
   mysql_data:
