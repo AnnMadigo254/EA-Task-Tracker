@@ -27,3 +27,5 @@ networks:
   ea_network:
     name: ea_network
     driver: bridge
+
+    

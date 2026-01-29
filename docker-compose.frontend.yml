@@ -6,7 +6,7 @@ services:
     container_name: ea_tracker_frontend
     restart: always
     ports:
-      - "80:80"
+      - "5173:80"
     networks:
       - ea_network
 
